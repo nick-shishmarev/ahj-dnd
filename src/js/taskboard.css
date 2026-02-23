@@ -50,6 +50,10 @@
   font-size: 1em;
 }
 
+.task-title:hover {
+  cursor: grabbing;
+}
+
 .add {
   width: 100%;
 }
