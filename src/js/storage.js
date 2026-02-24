@@ -20,7 +20,7 @@ export default class Storage {
 
     if (taskData) {
       for (const task of taskData) {
-        taskList.push(new Task(task.title, task.type));
+        taskList.push(new Task(task.title, task.type, task.id));
       }
     }
 

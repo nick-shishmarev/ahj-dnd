@@ -1,12 +1,13 @@
 //
 
 export default class Task {
-  constructor(title, type) {
+  constructor(title, type, id) {
     this.title = title;
     this.type = type;
+    this.id = id;
   }
 
   toString() {
-    return `${this.type}: ${this.title}`;
+    return `${this.id}:${this.type} - ${this.title}`;
   }
 }

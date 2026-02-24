@@ -1,6 +1,6 @@
 import Task from "./task";
 import "./taskboard.css";
-import fillBoard from "./tasklist";
+import fillBoard, { createID } from "./tasklist";
 
 export default class TaskBoard {
   constructor(parent, storage) {
@@ -78,6 +78,11 @@ export default class TaskBoard {
   }
 
   start() {
+    for (const col of this.columns) {
+      const box = col.querySelector(".task-box");
+      box.innerHTML = '';
+    }
+
     this.taskList = this.storage.getTaskList("taskData");
 
     for (const task of this.taskList) {
@@ -103,15 +108,15 @@ export default class TaskBoard {
   }
 
   showTask(task) {
-    const footer =
+    const box =
       this.columns[this.columnNames[task.type]].querySelector(".task-box");
     const el = `
-      <div class="task" data-type="${task.type}">
+      <div class="task" data-type="${task.type}" data-id="${task.id}">
         <p class="task-title">${task.title}</p>
         <div class="task-close hidden">&times;</div>
       </div>
     `;
-    footer.insertAdjacentHTML("beforeend", el);
+    box.insertAdjacentHTML("beforeend", el);
   }
 
   addNewTask(column) {
@@ -129,7 +134,8 @@ export default class TaskBoard {
         return;
       }
 
-      const task = new Task(text.value, column.dataset.type);
+      const id = createID();
+      const task = new Task(text.value, column.dataset.type, id);
       this.showTask(task);
       this.taskList.push(task);
       this.modifyTaskList();
@@ -150,10 +156,13 @@ export default class TaskBoard {
 
   deleteTask(taskEl) {
     const task = taskEl.querySelector(".task-title").textContent;
-    const index = this.taskList.findIndex((obj) => obj.title === task);
-    this.taskList.splice(index, 1);
-    this.storage.saveTaskList("taskData", this.taskList);
-    taskEl.remove();
+    const id = taskEl.dataset.id;
+    const index = this.taskList.findIndex((obj) => obj.id === id);
+    if (index > -1) {
+      this.taskList.splice(index, 1);
+      this.storage.saveTaskList("taskData", this.taskList);
+      taskEl.remove();
+    }
   }
 
   onMouseDown = (e) => {
@@ -224,6 +233,7 @@ export default class TaskBoard {
 
     if (target || box || tasks) {
       const text = this.elToDrag.querySelector(".task-title").textContent;
+      const id = this.elToDrag.dataset.id;
       const type = tasks.closest(".column").dataset.type;
 
       this.elToDrag.classList.remove("dragged");
@@ -232,7 +242,7 @@ export default class TaskBoard {
       this.blank.replaceWith(this.elToDrag);
       this.elToDrag = undefined;
 
-      const index = this.taskList.findIndex((obj) => obj.title === text);
+      const index = this.taskList.findIndex((obj) => obj.id === id);
       this.taskList[index].type = type;
       this.modifyTaskList();
       this.storage.saveTaskList("taskData", this.taskList);
@@ -252,7 +262,8 @@ export default class TaskBoard {
     for (const task of tasks) {
       const title = task.querySelector(".task-title").textContent;
       const type = task.dataset.type;
-      newList.push(new Task(title, type));
+      const id = task.dataset.id;
+      newList.push(new Task(title, type, id));
     }
     this.taskList = newList;
   }
